@@ -1,4 +1,5 @@
 import { StacCollection as Collection } from "stac-ts";
+import { EnumDeclaration } from "typescript";
 
 type GenericObject = {
   [key: string]: any  // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -36,7 +37,7 @@ export type CollectionConfig = {
   collectionStacUrl: string;
   displayName: string;
   tiler: string;
-  datetime_range?: [string, string];
+  timeseries_type?: string;
   stac: StacCollection;
 }
 
@@ -44,7 +45,7 @@ export type LayerConfig = {
   id: string;
   name: string;
   isVisible: boolean;
-  datetime_range?: [string, string];
+  timeseries_type?: string; // forecast or analysis
   renderConfig: {
     collection: string;
     variable?: string;

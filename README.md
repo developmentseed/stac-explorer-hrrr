@@ -12,6 +12,10 @@ Copy `.env.example` to `.env.local` and add a Mapbox token
 
 In the project directory, you can run:
 
+### `yarn install`
+
+Install necessary dependencies.
+
 ### `yarn start`
 
 Runs the app in the development mode.\

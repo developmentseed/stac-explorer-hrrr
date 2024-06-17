@@ -10,7 +10,7 @@ type FormValues = {
 }
 
 function VariablesSelect({ collection, addLayer }: SelectProps) {
-  const { stac, datetime_range } = collection;
+  const { stac, timeseries_type } = collection;
   const cubeVariables = stac['cube:variables'];
   const variableOptions = cubeVariables ? Object.keys(cubeVariables) : null;
   const renderOptions = Object.keys(stac.renders);
@@ -31,15 +31,16 @@ function VariablesSelect({ collection, addLayer }: SelectProps) {
   const onSubmit: SubmitHandler<FormValues> = ({ renderOption }) =>{
     const variable = cubeVariables && renderOption in cubeVariables ? renderOption : undefined;
 
-    let datetime = timeMin;
-    if (datetime_range) {
-      const interval = durationToMs(datetime_range[0]);
-      datetime = `${timeMin}/${new Date(Date.parse(timeMin) + interval).toISOString()}`;
-    }
+    // TODO: What should the default be?
+    // let datetime = timeMin;
+    // if (datetime_range) {
+    //   const interval = durationToMs(datetime_range[0]);
+    //   datetime = `${timeMin}/${new Date(Date.parse(timeMin) + interval).toISOString()}`;
+    // }
+
 
     let renderConfig = {
       renderOption,
-      datetime,
       collection: collection.id,
       variable
     }
@@ -48,7 +49,7 @@ function VariablesSelect({ collection, addLayer }: SelectProps) {
       id: crypto.randomUUID(),
       name: collection.id,
       isVisible: true,
-      datetime_range,
+      timeseries_type: collection.timeseries_type,
       renderConfig
     });
   };

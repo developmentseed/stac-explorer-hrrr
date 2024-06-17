@@ -16,14 +16,14 @@ function LayerForm({ config, updateLayer }: LayerFormProps) {
     return <p>Loading...</p>
   }
 
-  const cubeVariables = collection && collection.stac['cube:variables'];
-  const datetime_range = collection && collection.datetime_range;
+  // const cubeVariables = collection && collection.stac['cube:variables'];
+  const timeseries_type = collection && collection.timeseries_type;
 
-  if (cubeVariables) {
-    return <LayerFormWithDateSlider config={config} collection={collection.stac} updateLayer={updateLayer} />
-  }
+  // if (cubeVariables) {
+  //   return <LayerFormWithDateSlider config={config} collection={collection.stac} updateLayer={updateLayer} />
+  // }
 
-  if (datetime_range) {
+  if (timeseries_type) {
     return <LayerFormWithDatePicker config={config} collection={collection.stac} updateLayer={updateLayer} />
   }
 

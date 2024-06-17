@@ -17,6 +17,8 @@ function Layer({ config, beforeId }: Props) {
 
   const { minmax_zoom, ...renders } = collection.stac.renders[renderOption!]
 
+  // TODO: need to search for the specific asset to render
+  // if the option is "forecast", then it should be the most recent item from the set of 00, 06, 12, 18
   const renderConfig = {
     variable,
     // datetime: `${datetime!.split('T')[0]}T00:00:00Z`,
