@@ -24,7 +24,7 @@ function Layerlist({ layers, setVisibility, updateLayer, removeLayer }: Props) {
   return (
     <>
       <Text as="h3" fontWeight="bold" mb="4">Layers</Text>
-      <Accordion allowToggle>
+      <Accordion allowToggle defaultIndex={[0]} allowMultiple>
         {layers.map((layer) => {
           const { id, name, isVisible } = layer;
           return (
