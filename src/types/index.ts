@@ -30,6 +30,7 @@ export type DataCubeCollection = {
   "cube:variables": GenericObject;
 } & StacRender;
 
+
 export type StacCollection = Collection & DataCubeCollection;
 
 export type CollectionConfig = {
@@ -48,8 +49,9 @@ export type LayerConfig = {
   timeseries_type?: string; // forecast or analysis
   renderConfig: {
     collection: string;
-    variable?: string;
+    variable: string;
     renderOption?: string;
-    datetime?: string;
+    datetime_str?: string;
+    reference_dt_str?: string;
   }
 }

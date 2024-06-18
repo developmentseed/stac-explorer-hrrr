@@ -2,7 +2,7 @@ import { Alert, AlertDescription, AlertIcon, AlertTitle } from "@chakra-ui/alert
 import { Button, FormControl, FormErrorMessage, Radio, RadioGroup, Stack } from "@chakra-ui/react";
 import { useForm, Controller, SubmitHandler } from "react-hook-form"
 import { SelectProps } from "./types";
-import { durationToMs } from "../../../utils";
+import { getMostRecentUTC } from "../../../utils";
 
 type FormValues = {
   renderOption: string;
@@ -10,17 +10,12 @@ type FormValues = {
 }
 
 function VariablesSelect({ collection, addLayer }: SelectProps) {
-  const { stac, timeseries_type } = collection;
+  const { stac } = collection;
   const cubeVariables = stac['cube:variables'];
-  const variableOptions = cubeVariables ? Object.keys(cubeVariables) : null;
   const renderOptions = Object.keys(stac.renders);
-  // layerOptions will be keys of cube:variables (variableOptions) if they exist,
-  // otherwise the options are the keys of the renders object (renderOptions).
-  const layerOptions = variableOptions || renderOptions;
-
-  // Simplified time determination logic
-  const timeInfo = stac['cube:dimensions']?.time || stac.extent.temporal;
-  const timeMin = (stac['cube:dimensions'] ? timeInfo.extent[0] : timeInfo.interval[0][0]) || '1970-01-01T00:00:00Z';
+  const temporal = stac.extent.temporal;
+  const lastTemporalExtent = temporal.interval[0][1];
+  const maxDatetimeStr = lastTemporalExtent ? lastTemporalExtent : getMostRecentUTC().toISOString();
 
   const {
     control,
@@ -29,20 +24,12 @@ function VariablesSelect({ collection, addLayer }: SelectProps) {
   } = useForm<FormValues>();
 
   const onSubmit: SubmitHandler<FormValues> = ({ renderOption }) =>{
-    const variable = cubeVariables && renderOption in cubeVariables ? renderOption : undefined;
-
-    // TODO: What should the default be?
-    // let datetime = timeMin;
-    // if (datetime_range) {
-    //   const interval = durationToMs(datetime_range[0]);
-    //   datetime = `${timeMin}/${new Date(Date.parse(timeMin) + interval).toISOString()}`;
-    // }
-
-
     let renderConfig = {
       renderOption,
       collection: collection.id,
-      variable
+      variable: renderOption,
+      datetime_str: maxDatetimeStr ?? undefined,
+      reference_dt_str: maxDatetimeStr ?? undefined
     }
 
     addLayer({
@@ -65,7 +52,7 @@ function VariablesSelect({ collection, addLayer }: SelectProps) {
             render={({ field }) => (
               <RadioGroup {...field}>
                 <Stack direction="column">
-                  {layerOptions.map(option => (
+                  {renderOptions.map(option => (
                     <Radio
                       key={option}
                       value={option}

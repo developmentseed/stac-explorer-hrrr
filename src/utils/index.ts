@@ -41,3 +41,25 @@ export function durationToMs(duration: string): number {
 export function epochToDisplayDate(epoch?: number): string | undefined {
   return epoch ? new Date(epoch).toUTCString() : undefined;
 }
+
+export function getMostRecentUTC(): Date {
+  const now = new Date();
+  const currentHour = now.getUTCHours();
+  const month = now.getUTCMonth();
+  const year = now.getUTCFullYear();
+
+  let recentHour;
+
+  if (currentHour >= 18) {
+    recentHour = 18;
+  } else if (currentHour >= 12) {
+    recentHour = 12;
+  } else if (currentHour >= 6) {
+    recentHour = 6;
+  } else {
+    recentHour = 0;
+  }
+
+  const mostRecentDateTime = new Date(Date.UTC(year, month, now.getUTCDate(), recentHour));
+  return mostRecentDateTime;
+}

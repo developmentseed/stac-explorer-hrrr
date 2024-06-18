@@ -3,8 +3,7 @@ import { LayerConfig, StacCollection } from "../../types";
 import { FormControl, FormErrorMessage, FormLabel } from "@chakra-ui/react";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import DateTimeSlider from "../generic/DateTimeSlider";
-// import { max } from "date-fns";
-// import { durationToMs } from "../../utils";
+import { getMostRecentUTC } from "../../utils";
 
 type Props = {
   config: LayerConfig;
@@ -15,7 +14,7 @@ type Props = {
 function LayerFormWithDatePicker({ config, collection, updateLayer }: Props) {
   const [timeMin, timeMax] = collection.extent.temporal.interval[0];
   const minDate = useMemo(() => new Date(timeMin ? Date.parse(timeMin) : 0), [timeMin]);
-  const maxDate = useMemo(() => new Date(timeMax ? Date.parse(timeMax) : Date.now()), [timeMax]);
+  const maxDate = useMemo(() => new Date(timeMax ? Date.parse(timeMax) : getMostRecentUTC()), [timeMax]);
 
   // TODO: can't figure out how not to default to local time zone, so the datepicker is on my local time zone but the
   // slider is on UTC.
@@ -31,17 +30,20 @@ function LayerFormWithDatePicker({ config, collection, updateLayer }: Props) {
 
     setDateError('');
     setSelectedDate(date);
+
     if (start_date_change) {
       setSelectedStartDate(date);
     }
+
     updateLayer({
       ...config,
       renderConfig: {
         ...config.renderConfig,
-        datetime: date.toISOString(),
+        datetime_str: date.toISOString(),
+        reference_dt_str: selectedStartDate?.toISOString(),
       },
     });
-  }, [config, updateLayer]);
+  }, [config, updateLayer, selectedStartDate]);
 
   return (
     <FormControl isInvalid={!!dateError}>
@@ -57,7 +59,9 @@ function LayerFormWithDatePicker({ config, collection, updateLayer }: Props) {
         // may be able to simplify this by removing onChangeEnd?
         <DateTimeSlider
           min={selectedStartDate}
+          // assumes the 48 hour forecast
           max={new Date(selectedStartDate.getTime() + 2 * 60 * 60 * 24 * 1000)}
+          // depends on if it's a forecast or historical
           step="PT1H"
           aria-labelledby="testing"
           value={selectedDate}
