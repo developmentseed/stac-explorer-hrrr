@@ -70,30 +70,30 @@ function Layer({ config, beforeId }: Props) {
   const { id } = config;
   const { collection: collectionId, variable, renderOption = '', datetime_str, reference_dt_str } = config.renderConfig;
   const { collection } = useCollection(collectionId);
-  // create a state variable to store urls for each datetime option
-  // debounce
+
   const [urls, setUrls] = useState<Map<string, string>>(new Map<string, string>());
   const [currentUrl, setCurrentUrl] = useState<string>('');
-
-  // function to generate url should happen in useEffect, will set state
-  // set current url whenever datetime_str or reference_dt_str changes
-  // set it to the already discovered url, if it's in state-managed urls already
-  // or create a new one
   useEffect(() => {
-
+    if (!datetime_str || !reference_dt_str) return;
     const datetimes_key = [datetime_str, reference_dt_str].join(',')
     const memoizedUrl = urls.get(datetimes_key)
+    // Function to update the Map state
+    const updateUrlsState = (key: string, value: string) => {
+      setUrls(prevMap => {
+        const newMap = new Map(prevMap);
+        newMap.set(key, value);
+        return newMap;
+      });
+    };
     if (memoizedUrl) {
-      setCurrentUrl(urls.get(memoizedUrl)!)
+      setCurrentUrl(memoizedUrl)
     } else {
-      // fix me
-      const newUrl = generateVrtString(reference_dt_str || '', datetime_str || '');
-      //set urls state
-      urls.set(datetimes_key, newUrl)
+      const newUrl = generateVrtString(reference_dt_str, datetime_str)
+      updateUrlsState(datetimes_key, newUrl);
       setCurrentUrl(newUrl)
     }
-    // use current url state in render config
-  }, [datetime_str, reference_dt_str])
+  }, [datetime_str, reference_dt_str, urls])
+
   if (!collection) return null;
 
   const { minmax_zoom, ...renders } = collection.stac.renders[renderOption!]
