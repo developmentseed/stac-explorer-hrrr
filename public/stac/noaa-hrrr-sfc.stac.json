@@ -9128,7 +9128,7 @@
   "renders": {
     "GUST": {
         "title": "Renders configuration for GUST__surface__analysis",
-        "resampling": "bilinear",
+        "resampling": "average",
         "colormap_name": "rainbow",
         "rescale": [
             [

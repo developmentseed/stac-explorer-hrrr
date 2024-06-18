@@ -2,6 +2,7 @@ import { Source, Layer as GlLayer } from 'react-map-gl';
 import { CollectionConfig, LayerConfig } from '../../types';
 import { useCollection } from '../../hooks';
 import { renderConfigToUrlParams } from '../../utils';
+import { useEffect, useState } from 'react';
 
 type Props = {
   config: LayerConfig
@@ -67,9 +68,32 @@ function generateVrtString(reference_dt_str: string, datetime_str: string) {
 
 function Layer({ config, beforeId }: Props) {
   const { id } = config;
-  const { collection: collectionId, variable, renderOption, datetime_str, reference_dt_str } = config.renderConfig;
+  const { collection: collectionId, variable, renderOption = '', datetime_str, reference_dt_str } = config.renderConfig;
   const { collection } = useCollection(collectionId);
+  // create a state variable to store urls for each datetime option
+  // debounce
+  const [urls, setUrls] = useState<Map<string, string>>(new Map<string, string>());
+  const [currentUrl, setCurrentUrl] = useState<string>('');
 
+  // function to generate url should happen in useEffect, will set state
+  // set current url whenever datetime_str or reference_dt_str changes
+  // set it to the already discovered url, if it's in state-managed urls already
+  // or create a new one
+  useEffect(() => {
+
+    const datetimes_key = [datetime_str, reference_dt_str].join(',')
+    const memoizedUrl = urls.get(datetimes_key)
+    if (memoizedUrl) {
+      setCurrentUrl(urls.get(memoizedUrl)!)
+    } else {
+      // fix me
+      const newUrl = generateVrtString(reference_dt_str || '', datetime_str || '');
+      //set urls state
+      urls.set(datetimes_key, newUrl)
+      setCurrentUrl(newUrl)
+    }
+    // use current url state in render config
+  }, [datetime_str, reference_dt_str])
   if (!collection) return null;
 
   const { minmax_zoom, ...renders } = collection.stac.renders[renderOption!]
@@ -78,7 +102,7 @@ function Layer({ config, beforeId }: Props) {
 
   // if the option is "forecast", then it should be the most recent item from the set of 00, 06, 12, 18
   const renderConfig = {
-    url: generateVrtString(reference_dt_str, datetime_str),
+    url: currentUrl,
     scale: 1,
     ...renders
   }
@@ -86,6 +110,10 @@ function Layer({ config, beforeId }: Props) {
   const tileUrl = `${tiler}?${renderConfigToUrlParams(renderConfig)}`;
 
   if (!config.isVisible) {
+    return null;
+  }
+
+  if (!currentUrl) {
     return null;
   }
 
