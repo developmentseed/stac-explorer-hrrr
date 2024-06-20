@@ -11,7 +11,6 @@ type FormValues = {
 
 function VariablesSelect({ collection, addLayer }: SelectProps) {
   const { stac } = collection;
-  const cubeVariables = stac['cube:variables'];
   const renderOptions = Object.keys(stac.renders);
   const temporal = stac.extent.temporal;
   const lastTemporalExtent = temporal.interval[0][1];

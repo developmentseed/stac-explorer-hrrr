@@ -21,7 +21,7 @@ function LayerForm({ config, updateLayer }: LayerFormProps) {
 
   const timeseries_type = collection.timeseries_type;
 
-  if (timeseries_type == 'forecast') {
+  if (timeseries_type === 'forecast') {
     return <LayerFormWithDatePicker config={config} collection={collection.stac} updateLayer={updateLayer} />
   }
 
