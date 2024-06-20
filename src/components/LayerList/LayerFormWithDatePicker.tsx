@@ -17,7 +17,7 @@ function LayerFormWithDatePicker({ config, collection, updateLayer }: Props) {
   const maxDate = useMemo(() => new Date(timeMax ? Date.parse(timeMax) : getMostRecentUTC()), [timeMax]);
   // TODO: can't figure out how not to default to local time zone, so the datepicker is on my local time zone but the slider starts on UTC.
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(maxDate);
-  const [selectedStartDate, setSelectedStartDate] = useState<Date | undefined>(selectedDate);
+  const [selectedStartDate, setSelectedStartDate] = useState<Date>(maxDate);
   const [dateError, setDateError] = useState<string>('');
 
   const onChange = useCallback((date: Date | null, startDateChange: Boolean = false) => {
@@ -27,10 +27,17 @@ function LayerFormWithDatePicker({ config, collection, updateLayer }: Props) {
     }
 
     setDateError('');
-    setSelectedDate(date);
+    // on option is to use ISOString and replace the timezone with 00:00, but this doesn't work for the date picker, only the slider.
 
     if (startDateChange) {
-      setSelectedStartDate(date);
+      // the selected date will be in the local timezone, so we need to convert it to UTC.
+      const isoString = date.toISOString();
+      const updatedIsoString = isoString.replace(/(\d{2}:\d{2})/, "00:00");      
+      let utcDate = new Date(updatedIsoString);
+      setSelectedDate(utcDate);
+      setSelectedStartDate(utcDate);
+    } else {
+      setSelectedDate(date);
     }
 
     updateLayer({
@@ -48,7 +55,9 @@ function LayerFormWithDatePicker({ config, collection, updateLayer }: Props) {
     <FormControl isInvalid={!!dateError}>
       <FormLabel as="div">Select Date</FormLabel>
       <SingleDatepicker
-        date={selectedStartDate}
+        // the start date is in UTC which will be converted to the date of the local time zone, so may appear off by one day.
+        // modify the selected date to be date +/- timezone offset, so the date in the picker matches UTC date in time slider
+        date={new Date(selectedStartDate.getTime() + selectedStartDate.getTimezoneOffset() * 60 * 1000)}
         onDateChange={(v) => onChange(v, true)}
         minDate={minDate}
         maxDate={maxDate}
