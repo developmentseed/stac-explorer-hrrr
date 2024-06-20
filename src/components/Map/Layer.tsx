@@ -1,5 +1,5 @@
-import { Source, Layer as GlLayer, RasterLayer } from 'react-map-gl';
-import { CollectionConfig, LayerConfig } from '../../types';
+import { Source, Layer as GlLayer } from 'react-map-gl';
+import { LayerConfig } from '../../types';
 import { useCollection } from '../../hooks';
 import { renderConfigToUrlParams } from '../../utils';
 import { useEffect, useState } from 'react';
@@ -130,7 +130,7 @@ function Layer({ config, beforeId }: Props) {
         type="raster"
         beforeId={beforeId}
         minzoom={minmax_zoom ? minmax_zoom[0] : 0}
-        maxzoom={minmax_zoom ? minmax_zoom[1] : 22}
+        maxzoom={minmax_zoom ? minmax_zoom[1] : 22}      
       />
     </Source>
   );
