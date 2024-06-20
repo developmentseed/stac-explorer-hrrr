@@ -1,5 +1,4 @@
 import { StacCollection as Collection } from "stac-ts";
-import { EnumDeclaration } from "typescript";
 
 type GenericObject = {
   [key: string]: any  // eslint-disable-line @typescript-eslint/no-explicit-any
