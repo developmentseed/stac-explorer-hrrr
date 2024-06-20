@@ -9,8 +9,8 @@ type Props = {
   beforeId?: string
 }
 
+// Calculate the difference in hours
 function getZeroPaddedHourDifference(date1: Date, date2: Date) {
-  // Calculate the difference in hours
   const hoursDifference = Math.abs(date1.getTime() - date2.getTime()) / (1000 * 60 * 60);
   // Convert to integer and pad with zeros
   return Math.floor(hoursDifference).toString().padStart(2, '0');
@@ -18,7 +18,7 @@ function getZeroPaddedHourDifference(date1: Date, date2: Date) {
 
 // async function querySTACAndExtractBytes(collection: CollectionConfig, datetime_str: string, reference_dt_str: string, variable_name: string): <start_byte: number, end_byte: number> {
 //   // Construct the STAC query URL
-//   const stacUrl = collection.collectionStacUrl;
+//   const stacUrl = collection.collectionStacUrl + "/items";
 //   const queryParams = new URLSearchParams({
 //     datetime: datetime_str,
 //     "forecast:reference_time": reference_dt_str,
@@ -49,7 +49,7 @@ function getZeroPaddedHourDifference(date1: Date, date2: Date) {
 //   }
 // }
 
-// !!!Temporary - to be replaced by STAC item search
+// !!! Temporary - to be replaced by STAC item search !!!
 function generateVrtString(reference_dt_str: string, datetime_str: string) {
   const reference_datetime = new Date(reference_dt_str);
   const datetime = new Date(datetime_str);
@@ -59,9 +59,8 @@ function generateVrtString(reference_dt_str: string, datetime_str: string) {
   const day = String(reference_datetime.getUTCDate()).padStart(2, '0');
   const hour = String(reference_datetime.getUTCHours()).padStart(2, '0');
   const blobContainer = "https://noaahrrr.blob.core.windows.net/hrrr"
-  // TODO: define this in the collection
+  // Temporary, STAC search will use the collection stac url which will correspond to a specific product.
   const product = 'sfc';
-
   const gribUrl = `${blobContainer}/hrrr.${year}${month}${day}/conus/hrrr.t${hour}z.wrf${product}f${forecast_hour}.grib2`;
   const grib_message = 9
   return `vrt:///vsicurl/${gribUrl}?bands=${grib_message}`
@@ -72,6 +71,7 @@ function Layer({ config, beforeId }: Props) {
   const { collection: collectionId, renderOption = '', datetime_str, reference_dt_str } = config.renderConfig;
   const { collection } = useCollection(collectionId);
 
+  // Store already VRT GRIB URLs already fetched for a given layer
   const [urls, setUrls] = useState<Map<string, string>>(new Map<string, string>());
   const [currentUrl, setCurrentUrl] = useState<string>('');
   useEffect(() => {
@@ -101,7 +101,7 @@ function Layer({ config, beforeId }: Props) {
 
   if (!(reference_dt_str && datetime_str)) return null;
 
-  // if the option is "forecast", then it should be the most recent item from the set of 00, 06, 12, 18
+  // TODO: the option is "forecast", then it should be the most recent item from the set of 00, 06, 12, 18
   const renderConfig = {
     url: currentUrl,
     scale: 1,
