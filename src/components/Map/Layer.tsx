@@ -1,4 +1,4 @@
-import { Source, Layer as GlLayer } from 'react-map-gl';
+import { Source, Layer as GlLayer, RasterLayer } from 'react-map-gl';
 import { CollectionConfig, LayerConfig } from '../../types';
 import { useCollection } from '../../hooks';
 import { renderConfigToUrlParams } from '../../utils';
@@ -61,6 +61,7 @@ function generateVrtString(reference_dt_str: string, datetime_str: string) {
   const blobContainer = "https://noaahrrr.blob.core.windows.net/hrrr"
   // TODO: define this in the collection
   const product = 'sfc';
+
   const gribUrl = `${blobContainer}/hrrr.${year}${month}${day}/conus/hrrr.t${hour}z.wrf${product}f${forecast_hour}.grib2`;
   const grib_message = 9
   return `vrt:///vsicurl/${gribUrl}?bands=${grib_message}`
@@ -68,7 +69,7 @@ function generateVrtString(reference_dt_str: string, datetime_str: string) {
 
 function Layer({ config, beforeId }: Props) {
   const { id } = config;
-  const { collection: collectionId, variable, renderOption = '', datetime_str, reference_dt_str } = config.renderConfig;
+  const { collection: collectionId, renderOption = '', datetime_str, reference_dt_str } = config.renderConfig;
   const { collection } = useCollection(collectionId);
 
   const [urls, setUrls] = useState<Map<string, string>>(new Map<string, string>());

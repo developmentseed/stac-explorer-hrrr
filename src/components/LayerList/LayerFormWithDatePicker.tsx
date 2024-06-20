@@ -15,7 +15,6 @@ function LayerFormWithDatePicker({ config, collection, updateLayer }: Props) {
   const [timeMin, timeMax] = collection.extent.temporal.interval[0];
   const minDate = useMemo(() => new Date(timeMin ? Date.parse(timeMin) : 0), [timeMin]);
   const maxDate = useMemo(() => new Date(timeMax ? Date.parse(timeMax) : getMostRecentUTC()), [timeMax]);
-
   // TODO: can't figure out how not to default to local time zone, so the datepicker is on my local time zone but the
   // slider is on UTC.
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(maxDate);
@@ -40,7 +39,7 @@ function LayerFormWithDatePicker({ config, collection, updateLayer }: Props) {
       renderConfig: {
         ...config.renderConfig,
         datetime_str: date.toISOString(),
-        reference_dt_str: selectedStartDate?.toISOString(),
+        reference_dt_str: start_date_change ? date.toISOString() : selectedStartDate?.toISOString(),
       },
     });
   }, [config, updateLayer, selectedStartDate]);
