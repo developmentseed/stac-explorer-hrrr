@@ -13,9 +13,9 @@ function Map({ layers }: Props) {
     <MbMap
       mapboxAccessToken={process.env.REACT_APP_MAPBOX_TOKEN}
       initialViewState={{
-        longitude: 0,
-        latitude: 0,
-        zoom: 1,
+        longitude: -100,
+        latitude: 40,
+        zoom: 3,
       }}
       projection={{
         name: "mercator"

@@ -1,7 +1,7 @@
 import { Source, Layer as GlLayer } from 'react-map-gl';
 import { LayerConfig, CollectionConfig } from '../../types';
 import { useCollection } from '../../hooks';
-import { generateVrtString, renderConfigToUrlParams, querySTACAndExtractBytes } from '../../utils';
+import { generateVrtString, renderConfigToUrlParams } from '../../utils';
 import { useEffect, useState } from 'react';
 import { debug } from 'console';
 
@@ -55,7 +55,7 @@ function Layer({ config, beforeId }: Props) {
                     {
                     "property": "properties.forecast:reference_time"
                     },
-                    reference_dt_str.replace('Z', '') // Temporary
+                    reference_dt_str
                 ]
             },
             {
@@ -83,13 +83,34 @@ function Layer({ config, beforeId }: Props) {
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
-          // debugger;
-          // updateUrlsState(datetimes_key, newUrl);
-          // setCurrentUrl(newUrl)
           return response.json();
         })
         .then(data => {
-          console.log('Search Results:', JSON.stringify(data, null, 2));
+          const gribAsset = data.features[0].assets.grib;
+          const gribAssetUrl = gribAsset.href;
+          // const renderOptionAllSets = render
+          let variableData = gribAsset['grib:layers'][renderOption];
+          if (!variableData) {
+            const forecastSetAlternate = renderOption.replace(/analysis|point_in_time|instantaneous|periodic_max/g, function(match) {
+              switch (match) {
+                case 'analysis':
+                  return 'point_in_time';
+                case 'point_in_time':
+                  return 'analysis';
+                case 'instantaneous':
+                  return 'periodic_max';
+                case 'periodic_max':
+                  return 'instantaneous';
+                default:
+                  return ''; // Add a default return value here
+              }
+            });
+            variableData = gribAsset['grib:layers'][forecastSetAlternate];
+          }
+          const gribMessage = variableData['grib_message'];
+          const newUrl = `vrt:///vsicurl/${gribAssetUrl}?bands=${gribMessage}`
+          updateUrlsState(datetimes_key, newUrl);
+          setCurrentUrl(newUrl);
         })
         .catch(error => {
           console.error('Error:', error);
@@ -97,7 +118,7 @@ function Layer({ config, beforeId }: Props) {
       }
       fetchData();
     }
-  }, [datetime_str, reference_dt_str, collection, urls])
+  }, [datetime_str, reference_dt_str, collection, collectionId, urls, renderOption])
 
   if (!collection) return null;
 
@@ -105,7 +126,6 @@ function Layer({ config, beforeId }: Props) {
 
   if (!(reference_dt_str && datetime_str)) return null;
 
-  // TODO: the option is "forecast", then it should be the most recent item from the set of 00, 06, 12, 18
   const renderConfig = {
     url: currentUrl,
     scale: 1,

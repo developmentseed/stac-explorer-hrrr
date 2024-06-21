@@ -50,9 +50,9 @@ function LayerFormWithDatePicker({ config, collection, collectionConfig, updateL
       ...config,
       renderConfig: {
         ...config.renderConfig,
-        datetime_str: startDateChange ? utcDate.toISOString() : date.toISOString(),
+        datetime_str: startDateChange ? utcDate.toISOString() : date.toISOString().replace('.000Z', 'Z'),
         // if the start date has changed (from the date picker) use the date value, otherwise use the existing selected start date.
-        reference_dt_str: startDateChange ? utcDate.toISOString() : selectedStartDate?.toISOString(),
+        reference_dt_str: startDateChange ? utcDate.toISOString() : selectedStartDate?.toISOString().replace('.000Z', 'Z'),
       },
     });
   }, [config, updateLayer, selectedStartDate]);

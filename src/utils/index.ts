@@ -9,9 +9,13 @@ export function renderConfigToUrlParams(config: StacRenderObject): string {
   for (const [key, value] of Object.entries(params)) {
     if (!value) continue;
 
-    if (Array.isArray(value)) {
+    if (Array.isArray(value) && key !== 'colormap') {
       queryObj[key] = value.join(',');
-    } else {
+    } else if(key === 'colormap') {
+      const jsonString = JSON.stringify(value);
+      // URL-encode the JSON string
+      queryObj[key] = jsonString; //encodeURIComponent(jsonString);
+    }else {
       queryObj[key] = `${value}`;
     }
   }
@@ -75,46 +79,6 @@ function getZeroPaddedHourDifference(date1: Date, date2: Date) {
   return Math.floor(hoursDifference).toString().padStart(2, '0');
 }
 
-export async function querySTACAndExtractBytes(collection: CollectionConfig, datetime_str: string, reference_dt_str: string, variable_name: string) {
-  // Construct the STAC query URL
-  const { stacSearchUrl } = collection;
-  // Construct the search query
-  const searchQuery = {
-    filter: {
-      op: "and",
-      args: [
-        { op: "=", args: [{ property: "datetime" }, datetime_str] },
-        { op: "=", args: [{ property: "forecast:reference_time" }, reference_dt_str] }
-      ]
-    }
-  };
-
-
-  // Send the POST request
-  const fetchData = async() => {
-    fetch(stacSearchUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(searchQuery)
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      debugger;
-      return response.json();
-    })
-    .then(data => {
-      console.log('Search Results:', JSON.stringify(data, null, 2));
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
-  }
-  fetchData();
-}
 
 // !!! Temporary - to be replaced by STAC item search !!!
 function formatDateComponent(date: Date) {
