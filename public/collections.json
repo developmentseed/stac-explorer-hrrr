@@ -1,9 +1,11 @@
 [
     {
-      "id": "noaa-hrrr-sfc",
-      "collectionStacUrl": "/stac/noaa-hrrr-sfc.stac.json", 
+      "id": "noaa-hrrr-sfc-conus",
+      "collectionStacUrl": "https://stac.eoapi.dev/collections/noaa-hrrr-sfc-conus", 
+      "stacSearchUrl": "https://stac.eoapi.dev/search",
       "displayName": "Forecast: NOAA High Resolution Rapid Refresh (HRRR) - 2D surface levels",
       "tiler": "https://titiler.xyz/cog/tiles/WebMercatorQuad/{z}/{x}/{y}.png",
-      "timeseries_type": "forecast"
+      "timeseriesType": "forecast",
+      "lastAvaliableDatetime": "2024-06-20T12:00:00Z"
     }
 ]

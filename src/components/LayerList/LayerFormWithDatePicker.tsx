@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { LayerConfig, StacCollection } from "../../types";
+import { LayerConfig, StacCollection, CollectionConfig } from "../../types";
 import { FormControl, FormErrorMessage, FormLabel } from "@chakra-ui/react";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import DateTimeSlider from "../generic/DateTimeSlider";
@@ -9,11 +9,14 @@ type Props = {
   config: LayerConfig;
   collection: StacCollection;
   updateLayer: (config: LayerConfig) => void;
+  collectionConfig: CollectionConfig;
 }
 
-function LayerFormWithDatePicker({ config, collection, updateLayer }: Props) {
-  const [timeMin, timeMax] = collection.extent.temporal.interval[0];
+function LayerFormWithDatePicker({ config, collection, collectionConfig, updateLayer }: Props) {
+  const timeMin = collection.extent.temporal.interval[0][0];
+  const timeMax = collection.extent.temporal.interval[0][1] || collectionConfig.lastAvaliableDatetime;
   const minDate = useMemo(() => new Date(timeMin ? Date.parse(timeMin) : 0), [timeMin]);
+  // We may never fall back to getMostRecentUTC unless we have a real-time ingestion pipeline.
   const maxDate = useMemo(() => new Date(timeMax ? Date.parse(timeMax) : getMostRecentUTC()), [timeMax]);
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(maxDate);
@@ -47,9 +50,9 @@ function LayerFormWithDatePicker({ config, collection, updateLayer }: Props) {
       ...config,
       renderConfig: {
         ...config.renderConfig,
-        datetime_str: startDateChange ? utcDate.toISOString() : date.toISOString(),
+        datetime_str: startDateChange ? utcDate.toISOString() : date.toISOString().replace('.000Z', 'Z'),
         // if the start date has changed (from the date picker) use the date value, otherwise use the existing selected start date.
-        reference_dt_str: startDateChange ? utcDate.toISOString() : selectedStartDate?.toISOString(),
+        reference_dt_str: startDateChange ? utcDate.toISOString() : selectedStartDate?.toISOString().replace('.000Z', 'Z'),
       },
     });
   }, [config, updateLayer, selectedStartDate]);

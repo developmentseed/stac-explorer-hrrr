@@ -19,10 +19,10 @@ function LayerForm({ config, updateLayer }: LayerFormProps) {
     return <p>Collection not found.</p>;
   }
 
-  const timeseries_type = collection.timeseries_type;
+  const timeseriesType = collection.timeseriesType;
 
-  if (timeseries_type === 'forecast') {
-    return <LayerFormWithDatePicker config={config} collection={collection.stac} updateLayer={updateLayer} />
+  if (timeseriesType === 'forecast') {
+    return <LayerFormWithDatePicker config={config} collection={collection.stac} collectionConfig={collection} updateLayer={updateLayer} />
   }
 
   return null;

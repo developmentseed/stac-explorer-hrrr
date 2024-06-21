@@ -1,5 +1,5 @@
 import { parse } from "tinyduration";
-import { StacRenderObject } from "../types";
+import { StacRenderObject, CollectionConfig } from "../types";
 
 export function renderConfigToUrlParams(config: StacRenderObject): string {
   const { title, assets, ...params } = config;
@@ -9,9 +9,13 @@ export function renderConfigToUrlParams(config: StacRenderObject): string {
   for (const [key, value] of Object.entries(params)) {
     if (!value) continue;
 
-    if (Array.isArray(value)) {
+    if (Array.isArray(value) && key !== 'colormap') {
       queryObj[key] = value.join(',');
-    } else {
+    } else if(key === 'colormap') {
+      const jsonString = JSON.stringify(value);
+      // URL-encode the JSON string
+      queryObj[key] = jsonString; //encodeURIComponent(jsonString);
+    }else {
       queryObj[key] = `${value}`;
     }
   }
@@ -75,38 +79,6 @@ function getZeroPaddedHourDifference(date1: Date, date2: Date) {
   return Math.floor(hoursDifference).toString().padStart(2, '0');
 }
 
-// async function querySTACAndExtractBytes(collection: CollectionConfig, datetime_str: string, reference_dt_str: string, variable_name: string): <start_byte: number, end_byte: number> {
-//   // Construct the STAC query URL
-//   const stacUrl = collection.collectionStacUrl + "/items";
-//   const queryParams = new URLSearchParams({
-//     datetime: datetime_str,
-//     "forecast:reference_time": reference_dt_str,
-//   });
-//   const url = `${stacUrl}?${queryParams}`;
-
-//   try {
-//     const response = await fetch(url);
-//     if (!response.ok) {
-//       throw new Error(`STAC API request failed: ${response.statusText}`);
-//     }
-//     const data = await response.json();
-//     // Assuming the first item in the collection is the one we're interested in
-//     const item = data.features[0];
-//     if (!item) {
-//       throw new Error("No matching items found");
-//     }
-//     const asset = item.assets[variable_name];
-//     if (!asset) {
-//       throw new Error(`No asset found for variable: ${variable_name}`);
-//     }
-//     // Extract start_byte and end_byte
-//     const { start_byte, end_byte } = asset;
-//     return { start_byte, end_byte };
-//   } catch (error) {
-//     console.error("Error querying STAC and extracting bytes:", error);
-//     throw error; // Rethrow or handle as needed
-//   }
-// }
 
 // !!! Temporary - to be replaced by STAC item search !!!
 function formatDateComponent(date: Date) {

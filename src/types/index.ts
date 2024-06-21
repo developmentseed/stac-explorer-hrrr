@@ -35,9 +35,11 @@ export type StacCollection = Collection & DataCubeCollection;
 export type CollectionConfig = {
   id: string;
   collectionStacUrl: string;
+  stacSearchUrl: string;
   displayName: string;
   tiler: string;
-  timeseries_type?: string;
+  timeseriesType?: string;
+  lastAvaliableDatetime?: string;
   stac: StacCollection;
 }
 
@@ -45,7 +47,7 @@ export type LayerConfig = {
   id: string;
   name: string;
   isVisible: boolean;
-  timeseries_type?: string; // forecast or analysis
+  timeseriesType?: string; // forecast or analysis
   renderConfig: {
     collection: string;
     variable: string;

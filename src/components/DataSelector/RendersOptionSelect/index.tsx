@@ -9,11 +9,27 @@ type FormValues = {
   datetime: string;
 }
 
+function removeDuplicates(dictList: Record<string, any>, key: string) {
+  const seen = new Set();
+  const uniqueList: typeof dictList = {};
+
+  for (const [renderKey, value] of Object.entries(dictList)) {
+    if (!seen.has(value[key])) {
+      uniqueList[renderKey] = value;
+      seen.add(value[key]);
+    }
+  }  
+
+  return uniqueList;
+}
+
 function VariablesSelect({ collection, addLayer }: SelectProps) {
   const { stac } = collection;
-  const renderOptions = Object.keys(stac.renders);
+  const stacRenders = removeDuplicates(stac.renders, 'title');
+  const renderOptions = Object.keys(stacRenders);
   const temporal = stac.extent.temporal;
-  const lastTemporalExtent = temporal.interval[0][1];
+  const lastTemporalExtent = temporal.interval[0][1] || collection.lastAvaliableDatetime;
+  // We may never fall back to getMostRecentUTC unless we have a real-time ingestion pipeline.
   const maxDatetimeStr = lastTemporalExtent ? lastTemporalExtent : getMostRecentUTC().toISOString();
 
   const {
@@ -35,7 +51,7 @@ function VariablesSelect({ collection, addLayer }: SelectProps) {
       id: crypto.randomUUID(),
       name: collection.id,
       isVisible: true,
-      timeseries_type: collection.timeseries_type,
+      timeseriesType: collection.timeseriesType,
       renderConfig
     });
   };
@@ -57,7 +73,7 @@ function VariablesSelect({ collection, addLayer }: SelectProps) {
                       value={option}
                       isDisabled={!renderOptions.includes(option)}
                     >
-                      {option}
+                      {stac.renders[option].title}
                     </Radio>
                   ))}
                 </Stack>
