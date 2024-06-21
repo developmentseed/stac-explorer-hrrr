@@ -13,7 +13,8 @@ function VariablesSelect({ collection, addLayer }: SelectProps) {
   const { stac } = collection;
   const renderOptions = Object.keys(stac.renders);
   const temporal = stac.extent.temporal;
-  const lastTemporalExtent = temporal.interval[0][1];
+  const lastTemporalExtent = temporal.interval[0][1] || collection.lastAvaliableDatetime;
+  // We may never fall back to getMostRecentUTC unless we have a real-time ingestion pipeline.
   const maxDatetimeStr = lastTemporalExtent ? lastTemporalExtent : getMostRecentUTC().toISOString();
 
   const {
@@ -35,7 +36,7 @@ function VariablesSelect({ collection, addLayer }: SelectProps) {
       id: crypto.randomUUID(),
       name: collection.id,
       isVisible: true,
-      timeseries_type: collection.timeseries_type,
+      timeseriesType: collection.timeseriesType,
       renderConfig
     });
   };
@@ -57,7 +58,7 @@ function VariablesSelect({ collection, addLayer }: SelectProps) {
                       value={option}
                       isDisabled={!renderOptions.includes(option)}
                     >
-                      {option}
+                      {stac.renders[option].title}
                     </Radio>
                   ))}
                 </Stack>

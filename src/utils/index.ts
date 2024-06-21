@@ -1,5 +1,5 @@
 import { parse } from "tinyduration";
-import { StacRenderObject } from "../types";
+import { StacRenderObject, CollectionConfig } from "../types";
 
 export function renderConfigToUrlParams(config: StacRenderObject): string {
   const { title, assets, ...params } = config;
@@ -75,38 +75,46 @@ function getZeroPaddedHourDifference(date1: Date, date2: Date) {
   return Math.floor(hoursDifference).toString().padStart(2, '0');
 }
 
-// async function querySTACAndExtractBytes(collection: CollectionConfig, datetime_str: string, reference_dt_str: string, variable_name: string): <start_byte: number, end_byte: number> {
-//   // Construct the STAC query URL
-//   const stacUrl = collection.collectionStacUrl + "/items";
-//   const queryParams = new URLSearchParams({
-//     datetime: datetime_str,
-//     "forecast:reference_time": reference_dt_str,
-//   });
-//   const url = `${stacUrl}?${queryParams}`;
+export async function querySTACAndExtractBytes(collection: CollectionConfig, datetime_str: string, reference_dt_str: string, variable_name: string) {
+  // Construct the STAC query URL
+  const { stacSearchUrl } = collection;
+  // Construct the search query
+  const searchQuery = {
+    filter: {
+      op: "and",
+      args: [
+        { op: "=", args: [{ property: "datetime" }, datetime_str] },
+        { op: "=", args: [{ property: "forecast:reference_time" }, reference_dt_str] }
+      ]
+    }
+  };
 
-//   try {
-//     const response = await fetch(url);
-//     if (!response.ok) {
-//       throw new Error(`STAC API request failed: ${response.statusText}`);
-//     }
-//     const data = await response.json();
-//     // Assuming the first item in the collection is the one we're interested in
-//     const item = data.features[0];
-//     if (!item) {
-//       throw new Error("No matching items found");
-//     }
-//     const asset = item.assets[variable_name];
-//     if (!asset) {
-//       throw new Error(`No asset found for variable: ${variable_name}`);
-//     }
-//     // Extract start_byte and end_byte
-//     const { start_byte, end_byte } = asset;
-//     return { start_byte, end_byte };
-//   } catch (error) {
-//     console.error("Error querying STAC and extracting bytes:", error);
-//     throw error; // Rethrow or handle as needed
-//   }
-// }
+
+  // Send the POST request
+  const fetchData = async() => {
+    fetch(stacSearchUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(searchQuery)
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      debugger;
+      return response.json();
+    })
+    .then(data => {
+      console.log('Search Results:', JSON.stringify(data, null, 2));
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+  }
+  fetchData();
+}
 
 // !!! Temporary - to be replaced by STAC item search !!!
 function formatDateComponent(date: Date) {
