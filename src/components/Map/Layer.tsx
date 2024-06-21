@@ -1,9 +1,8 @@
 import { Source, Layer as GlLayer } from 'react-map-gl';
-import { LayerConfig, CollectionConfig } from '../../types';
+import { LayerConfig } from '../../types';
 import { useCollection } from '../../hooks';
-import { generateVrtString, renderConfigToUrlParams } from '../../utils';
+import { renderConfigToUrlParams } from '../../utils';
 import { useEffect, useState } from 'react';
-import { debug } from 'console';
 
 type Props = {
   config: LayerConfig

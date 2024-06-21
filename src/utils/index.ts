@@ -1,5 +1,5 @@
 import { parse } from "tinyduration";
-import { StacRenderObject, CollectionConfig } from "../types";
+import { StacRenderObject } from "../types";
 
 export function renderConfigToUrlParams(config: StacRenderObject): string {
   const { title, assets, ...params } = config;
