@@ -45,14 +45,15 @@ function LayerFormWithDatePicker({ config, collection, collectionConfig, updateL
       // if it's not a start date change, the slider correctly maintains the date in UTC.
       setSelectedDate(date);
     }
-
+    const datetime_str = (startDateChange ? utcDate.toISOString() : date.toISOString()).replace('.000Z', 'Z');
+    const reference_dt_str = (startDateChange ? utcDate.toISOString() : selectedStartDate.toISOString()).replace('.000Z', 'Z');
     updateLayer({
       ...config,
       renderConfig: {
         ...config.renderConfig,
-        datetime_str: startDateChange ? utcDate.toISOString() : date.toISOString().replace('.000Z', 'Z'),
+        datetime_str,
         // if the start date has changed (from the date picker) use the date value, otherwise use the existing selected start date.
-        reference_dt_str: startDateChange ? utcDate.toISOString() : selectedStartDate?.toISOString().replace('.000Z', 'Z'),
+        reference_dt_str,
       },
     });
   }, [config, updateLayer, selectedStartDate]);
