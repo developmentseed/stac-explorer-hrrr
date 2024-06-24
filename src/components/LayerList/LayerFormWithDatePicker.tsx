@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { LayerConfig, StacCollection, CollectionConfig } from "../../types";
-import { FormControl, FormErrorMessage, FormLabel } from "@chakra-ui/react";
+import { FormControl, FormErrorMessage, FormLabel, FormHelperText } from "@chakra-ui/react";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import DateTimeSlider from "../generic/DateTimeSlider";
 import { getMostRecentUTC } from "../../utils";
@@ -70,6 +70,7 @@ function LayerFormWithDatePicker({ config, collection, collectionConfig, updateL
         maxDate={maxDate}
         usePortal
       />
+      <FormHelperText>Displaying hourly forecasts for 48 hours starting at midnight UTC for the selected date.</FormHelperText>
       {selectedDate && selectedStartDate && (
         // may be able to simplify this by removing onChangeEnd?
         <DateTimeSlider

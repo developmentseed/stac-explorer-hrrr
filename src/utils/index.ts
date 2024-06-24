@@ -1,6 +1,5 @@
 import { parse } from "tinyduration";
 import { CollectionConfig, StacRenderObject, GribItemsResponse } from "../types";
-import { debug } from "console";
 
 export function renderConfigToUrlParams(config: StacRenderObject): string {
   const { title, assets, ...params } = config;

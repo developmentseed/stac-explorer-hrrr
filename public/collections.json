@@ -6,6 +6,6 @@
       "displayName": "Forecast: NOAA High Resolution Rapid Refresh (HRRR) - 2D surface levels",
       "tiler": "https://titiler.xyz/cog/tiles/WebMercatorQuad/{z}/{x}/{y}.png",
       "timeseriesType": "forecast",
-      "lastAvaliableDatetime": "2024-06-20T12:00:00Z"
+      "lastAvaliableDatetime": "2024-06-20T00:00:00Z"
     }
 ]
