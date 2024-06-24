@@ -52,7 +52,7 @@ export type LayerConfig = {
     collection: string;
     variable: string;
     renderOption?: string;
-    datetime_str?: string;
-    reference_dt_str?: string;
+    datetimeStr?: string;
+    referenceDtStr?: string;
   }
 }

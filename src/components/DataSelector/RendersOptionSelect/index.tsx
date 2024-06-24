@@ -43,8 +43,8 @@ function VariablesSelect({ collection, addLayer }: SelectProps) {
       renderOption,
       collection: collection.id,
       variable: renderOption,
-      datetime_str: maxDatetimeStr ?? undefined,
-      reference_dt_str: maxDatetimeStr ?? undefined
+      datetimeStr: maxDatetimeStr ?? undefined,
+      referenceDtStr: maxDatetimeStr ?? undefined
     }
 
     addLayer({

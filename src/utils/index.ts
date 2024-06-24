@@ -1,5 +1,5 @@
 import { parse } from "tinyduration";
-import { StacRenderObject } from "../types";
+import { CollectionConfig, StacRenderObject } from "../types";
 
 export function renderConfigToUrlParams(config: StacRenderObject): string {
   const { title, assets, ...params } = config;
@@ -72,29 +72,75 @@ export function getMostRecentUTC(): Date {
   return mostRecentDateTime;
 }
 
-// Calculate the difference in hours
-function getZeroPaddedHourDifference(date1: Date, date2: Date) {
-  const hoursDifference = Math.abs(date1.getTime() - date2.getTime()) / (1000 * 60 * 60);
-  // Convert to integer and pad with zeros
-  return Math.floor(hoursDifference).toString().padStart(2, '0');
-}
-
-
-// !!! Temporary - to be replaced by STAC item search !!!
-function formatDateComponent(date: Date) {
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  const hour = String(date.getUTCHours()).padStart(2, '0');
-  return { year, month, day, hour };
-}
-
-export function generateVrtString(reference_dt_str: string, datetime_str: string, blobContainer: string = "https://noaahrrr.blob.core.windows.net/hrrr", product: string = 'sfc', grib_message: number = 9) {
-  const reference_datetime = new Date(reference_dt_str);
-  const datetime = new Date(datetime_str);
-  const forecast_hour = getZeroPaddedHourDifference(datetime, reference_datetime);
-  const { year, month, day, hour } = formatDateComponent(reference_datetime);
-
-  const gribUrl = `${blobContainer}/hrrr.${year}${month}${day}/conus/hrrr.t${hour}z.wrf${product}f${forecast_hour}.grib2`;
-  return `vrt:///vsicurl/${gribUrl}?bands=${grib_message}`;
+export async function fetchData(collection: CollectionConfig, collectionId: string, referenceDtStr: string, datetimeStr: string, renderOption: string): Promise<string> {
+  const { stacSearchUrl } = collection;
+  // Construct the search query
+  const searchQuery = {
+    "collections": [
+        collectionId
+    ],
+    "filter": {
+    "and": [
+        {
+            "=": [
+                {
+                "property": "properties.forecast:reference_time"
+                },
+                referenceDtStr
+            ]
+        },
+        {
+            "=": [
+                {
+                "property": "properties.datetime"
+                },
+                datetimeStr
+            ]
+        }
+    ]
+    },
+    "filter-lang": "cql-json"
+  };  
+  return fetch(stacSearchUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(searchQuery)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    const gribAsset = data.features[0].assets.grib;
+    const gribAssetUrl = gribAsset.href;
+    // const renderOptionAllSets = render
+    let variableData = gribAsset['grib:layers'][renderOption];
+    if (!variableData) {
+      const forecastSetAlternate = renderOption.replace(/analysis|point_in_time|instantaneous|periodic_max/g, function(match) {
+        switch (match) {
+          case 'analysis':
+            return 'point_in_time';
+          case 'point_in_time':
+            return 'analysis';
+          case 'instantaneous':
+            return 'periodic_max';
+          case 'periodic_max':
+            return 'instantaneous';
+          default:
+            return ''; // Add a default return value here
+        }
+      });
+      variableData = gribAsset['grib:layers'][forecastSetAlternate];
+    }
+    const gribMessage = variableData['grib_message'];
+    return `vrt:///vsicurl/${gribAssetUrl}?bands=${gribMessage}`
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    throw new Error('Failed to fetch data');
+  });
 }

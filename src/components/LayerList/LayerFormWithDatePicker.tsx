@@ -45,15 +45,15 @@ function LayerFormWithDatePicker({ config, collection, collectionConfig, updateL
       // if it's not a start date change, the slider correctly maintains the date in UTC.
       setSelectedDate(date);
     }
-    const datetime_str = (startDateChange ? utcDate.toISOString() : date.toISOString()).replace('.000Z', 'Z');
-    const reference_dt_str = (startDateChange ? utcDate.toISOString() : selectedStartDate.toISOString()).replace('.000Z', 'Z');
+    const datetimeStr = (startDateChange ? utcDate.toISOString() : date.toISOString()).replace('.000Z', 'Z');
+    const referenceDtStr = (startDateChange ? utcDate.toISOString() : selectedStartDate.toISOString()).replace('.000Z', 'Z');
     updateLayer({
       ...config,
       renderConfig: {
         ...config.renderConfig,
-        datetime_str,
+        datetimeStr,
         // if the start date has changed (from the date picker) use the date value, otherwise use the existing selected start date.
-        reference_dt_str,
+        referenceDtStr,
       },
     });
   }, [config, updateLayer, selectedStartDate]);
@@ -76,7 +76,7 @@ function LayerFormWithDatePicker({ config, collection, collectionConfig, updateL
           min={selectedStartDate}
           // TODO: assumes the 48 hour forecast
           max={new Date(selectedStartDate.getTime() + 2 * 60 * 60 * 24 * 1000)}
-          // TODO: depends on if it's a forecast or historical
+          // TODO: step depends on if it's a forecast or historical, but we're only handling forecasts for now.
           step="PT1H"
           aria-labelledby="testing"
           value={selectedDate}
