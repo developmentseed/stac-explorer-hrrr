@@ -1,5 +1,6 @@
 import { parse } from "tinyduration";
-import { CollectionConfig, StacRenderObject } from "../types";
+import { CollectionConfig, StacRenderObject, GribItemsResponse } from "../types";
+import { debug } from "console";
 
 export function renderConfigToUrlParams(config: StacRenderObject): string {
   const { title, assets, ...params } = config;
@@ -72,7 +73,34 @@ export function getMostRecentUTC(): Date {
   return mostRecentDateTime;
 }
 
-export async function fetchData(collection: CollectionConfig, collectionId: string, referenceDtStr: string, datetimeStr: string, renderOption: string): Promise<string> {
+export function generateVrtString(data: GribItemsResponse, renderOption: string) {
+  debugger;
+  const gribAsset = data.features[0].assets.grib;
+  const gribAssetUrl = gribAsset.href;
+  // const renderOptionAllSets = render
+  let variableData = gribAsset['grib:layers'][renderOption];
+  if (!variableData) {
+    const forecastSetAlternate = renderOption.replace(/analysis|point_in_time|instantaneous|periodic_max/g, function(match) {
+      switch (match) {
+        case 'analysis':
+          return 'point_in_time';
+        case 'point_in_time':
+          return 'analysis';
+        case 'instantaneous':
+          return 'periodic_max';
+        case 'periodic_max':
+          return 'instantaneous';
+        default:
+          return ''; // Add a default return value here
+      }
+    });
+    variableData = gribAsset['grib:layers'][forecastSetAlternate];
+  }
+  const gribMessage = variableData['grib_message'];
+  return `vrt:///vsicurl/${gribAssetUrl}?bands=${gribMessage}`
+}
+
+export async function fetchData(collection: CollectionConfig, collectionId: string, referenceDtStr: string, datetimeStr: string): Promise<GribItemsResponse> {
   const { stacSearchUrl } = collection;
   // Construct the search query
   const searchQuery = {
@@ -113,31 +141,6 @@ export async function fetchData(collection: CollectionConfig, collectionId: stri
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     return response.json();
-  })
-  .then(data => {
-    const gribAsset = data.features[0].assets.grib;
-    const gribAssetUrl = gribAsset.href;
-    // const renderOptionAllSets = render
-    let variableData = gribAsset['grib:layers'][renderOption];
-    if (!variableData) {
-      const forecastSetAlternate = renderOption.replace(/analysis|point_in_time|instantaneous|periodic_max/g, function(match) {
-        switch (match) {
-          case 'analysis':
-            return 'point_in_time';
-          case 'point_in_time':
-            return 'analysis';
-          case 'instantaneous':
-            return 'periodic_max';
-          case 'periodic_max':
-            return 'instantaneous';
-          default:
-            return ''; // Add a default return value here
-        }
-      });
-      variableData = gribAsset['grib:layers'][forecastSetAlternate];
-    }
-    const gribMessage = variableData['grib_message'];
-    return `vrt:///vsicurl/${gribAssetUrl}?bands=${gribMessage}`
   })
   .catch(error => {
     console.error('Error:', error);

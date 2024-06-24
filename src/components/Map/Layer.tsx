@@ -1,7 +1,7 @@
 import { Source, Layer as GlLayer } from 'react-map-gl';
 import { LayerConfig } from '../../types';
 import { useCollection } from '../../hooks';
-import { renderConfigToUrlParams, fetchData } from '../../utils';
+import { renderConfigToUrlParams, fetchData, generateVrtString } from '../../utils';
 import { useEffect, useState } from 'react';
 
 type Props = {
@@ -40,7 +40,8 @@ function Layer({ config, beforeId }: Props) {
         return  ;
       }
   
-      fetchData(collection, collectionId, referenceDtStr, datetimeStr, renderOption).then((newUrl) => {
+      fetchData(collection, collectionId, referenceDtStr, datetimeStr).then((stacMetadata) => {
+        const newUrl = generateVrtString(stacMetadata, renderOption);
         setCurrentUrl(newUrl);
         updateUrlsState(datetimes_key, newUrl);
       })

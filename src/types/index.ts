@@ -56,3 +56,18 @@ export type LayerConfig = {
     referenceDtStr?: string;
   }
 }
+
+export type GribItemsResponse = {
+  features: {
+    assets: {
+      grib: {
+        href: string;
+        'grib:layers': {
+          [key: string]: {
+            'grib_message': string;
+          };
+        };
+      };
+    };
+  }[];
+};
