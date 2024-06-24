@@ -74,7 +74,6 @@ export function getMostRecentUTC(): Date {
 }
 
 export function generateVrtString(data: GribItemsResponse, renderOption: string) {
-  debugger;
   const gribAsset = data.features[0].assets.grib;
   const gribAssetUrl = gribAsset.href;
   // const renderOptionAllSets = render
