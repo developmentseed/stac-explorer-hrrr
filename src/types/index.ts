@@ -47,7 +47,7 @@ export type LayerConfig = {
   id: string;
   name: string;
   isVisible: boolean;
-  timeseriesType?: string; // forecast or analysis
+  timeseriesType?: "forecast" | "analysis"
   renderConfig: {
     collection: string;
     variable: string;
