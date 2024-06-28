@@ -1,7 +1,8 @@
 import { Source, Layer as GlLayer } from 'react-map-gl';
 import { LayerConfig } from '../../types';
 import { useCollection } from '../../hooks';
-import { renderConfigToUrlParams } from '../../utils';
+import { renderConfigToUrlParams, fetchData, generateVrtString } from '../../utils';
+import { useEffect, useState } from 'react';
 
 type Props = {
   config: LayerConfig
@@ -10,18 +11,51 @@ type Props = {
 
 function Layer({ config, beforeId }: Props) {
   const { id } = config;
-  const { collection: collectionId, variable, renderOption, datetime } = config.renderConfig;
+  const { collection: collectionId, renderOption = '', datetimeStr, referenceDtStr } = config.renderConfig;
   const { collection } = useCollection(collectionId);
+
+  // Use state to store previously generated grib vrt asset URLs.
+  // These only exist while the layer is mounted.
+  const [urls, setUrls] = useState<Map<string, string>>(new Map<string, string>());
+  const [currentUrl, setCurrentUrl] = useState<string>('');
+
+  useEffect(() => {
+    if (!datetimeStr || !referenceDtStr) return;
+    const datetimes_key = [datetimeStr, referenceDtStr].join(',')
+    const memoizedUrl = urls.get(datetimes_key)
+
+    // Function to update the Map state
+    const updateUrlsState = (key: string, value: string) => {
+      setUrls(prevMap => {
+        const newMap = new Map(prevMap);
+        newMap.set(key, value);
+        return newMap;
+      });
+    };
+
+    if (memoizedUrl) {
+      setCurrentUrl(memoizedUrl)
+    } else {
+      if (!collection) {
+        return  ;
+      }
+  
+      fetchData(collection, collectionId, referenceDtStr, datetimeStr).then((stacMetadata) => {
+        const newUrl = generateVrtString(stacMetadata, renderOption);
+        setCurrentUrl(newUrl);
+        updateUrlsState(datetimes_key, newUrl);
+      })
+    };
+  }, [datetimeStr, referenceDtStr, collection, collectionId, urls, renderOption])
 
   if (!collection) return null;
 
   const { minmax_zoom, ...renders } = collection.stac.renders[renderOption!]
 
+  if (!(referenceDtStr && datetimeStr)) return null;
+
   const renderConfig = {
-    variable,
-    // datetime: `${datetime!.split('T')[0]}T00:00:00Z`,
-    datetime,
-    concept_id: collection.stac.collection_concept_id,
+    url: currentUrl,
     scale: 1,
     ...renders
   }
@@ -29,6 +63,10 @@ function Layer({ config, beforeId }: Props) {
   const tileUrl = `${tiler}?${renderConfigToUrlParams(renderConfig)}`;
 
   if (!config.isVisible) {
+    return null;
+  }
+
+  if (!currentUrl) {
     return null;
   }
 

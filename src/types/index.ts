@@ -29,14 +29,17 @@ export type DataCubeCollection = {
   "cube:variables": GenericObject;
 } & StacRender;
 
+
 export type StacCollection = Collection & DataCubeCollection;
 
 export type CollectionConfig = {
   id: string;
   collectionStacUrl: string;
+  stacSearchUrl: string;
   displayName: string;
   tiler: string;
-  datetime_range?: [string, string];
+  timeseriesType?: "forecast" | "historical";
+  lastAvaliableDatetime?: string;
   stac: StacCollection;
 }
 
@@ -44,11 +47,27 @@ export type LayerConfig = {
   id: string;
   name: string;
   isVisible: boolean;
-  datetime_range?: [string, string];
+  timeseriesType?: "forecast" | "historical";
   renderConfig: {
     collection: string;
-    variable?: string;
+    variable: string;
     renderOption?: string;
-    datetime?: string;
+    datetimeStr?: string;
+    referenceDtStr?: string;
   }
 }
+
+export type GribItemsResponse = {
+  features: {
+    assets: {
+      grib: {
+        href: string;
+        'grib:layers': {
+          [key: string]: {
+            'grib_message': string;
+          };
+        };
+      };
+    };
+  }[];
+};

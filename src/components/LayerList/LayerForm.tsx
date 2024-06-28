@@ -1,7 +1,6 @@
 import { useCollection } from "../../hooks";
 import { LayerConfig } from "../../types";
 import LayerFormWithDatePicker from "./LayerFormWithDatePicker";
-import LayerFormWithDateSlider from "./LayerFormWithDateSlider";
 
 type LayerFormProps = {
   config: LayerConfig;
@@ -16,15 +15,14 @@ function LayerForm({ config, updateLayer }: LayerFormProps) {
     return <p>Loading...</p>
   }
 
-  const cubeVariables = collection && collection.stac['cube:variables'];
-  const datetime_range = collection && collection.datetime_range;
-
-  if (cubeVariables) {
-    return <LayerFormWithDateSlider config={config} collection={collection.stac} updateLayer={updateLayer} />
+  if (!collection) {
+    return <p>Collection not found.</p>;
   }
 
-  if (datetime_range) {
-    return <LayerFormWithDatePicker config={config} collection={collection.stac} updateLayer={updateLayer} />
+  const timeseriesType = collection.timeseriesType;
+
+  if (timeseriesType === 'forecast') {
+    return <LayerFormWithDatePicker config={config} collection={collection.stac} collectionConfig={collection} updateLayer={updateLayer} />
   }
 
   return null;

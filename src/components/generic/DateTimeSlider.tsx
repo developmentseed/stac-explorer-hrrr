@@ -3,13 +3,13 @@ import React from "react";
 import { durationToMs, epochToDisplayDate } from "../../utils";
 
 type Props = {
-  min: string;
-  max?: string | null;
+  min: Date;
+  max?: Date | null;
   step?: string;
   "aria-labelledby": string;
   onChange: (dateTime: string) => void;
   onChangeEnd: (dateTime: string) => void
-  value: string;
+  value: Date;
 }
 
 function DateTimeSlider({
@@ -22,9 +22,9 @@ function DateTimeSlider({
   onChangeEnd,
   ...field
 }: Props) {
-  const minMs = min ? Date.parse(min) : 0;
-  const maxMs = max ? Date.parse(max) : Date.now();
-  const valueMs = value ? Date.parse(value) : undefined;
+  const minMs = min ? min.getTime() : 0;
+  const maxMs = max ? max.getTime() : Date.now();
+  const valueMs = value ? value.getTime() : undefined;
 
   const interval = durationToMs(step);
   
