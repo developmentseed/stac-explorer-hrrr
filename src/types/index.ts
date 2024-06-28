@@ -38,7 +38,7 @@ export type CollectionConfig = {
   stacSearchUrl: string;
   displayName: string;
   tiler: string;
-  timeseriesType?: string;
+  timeseriesType?: "forecast" | "historical";
   lastAvaliableDatetime?: string;
   stac: StacCollection;
 }
@@ -47,7 +47,7 @@ export type LayerConfig = {
   id: string;
   name: string;
   isVisible: boolean;
-  timeseriesType?: string; // forecast or analysis
+  timeseriesType?: "forecast" | "historical";
   renderConfig: {
     collection: string;
     variable: string;
